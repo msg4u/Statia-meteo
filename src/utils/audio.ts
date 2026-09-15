@@ -140,9 +140,26 @@ export function playSuccessFanfare() {
   }
 }
 
-// Text to speech in Romanian
-export function speakText(text: string, onEnd?: () => void) {
-  if (!('speechSynthesis' in window)) {
+// Text to speech with warm, female Romanian narrator voice
+// Tier 1: Gemini AI TTS ('gemini-3.1-flash-tts-preview' with voice 'Kore' - natural, warm female Romanian)
+// Tier 2: Enhanced Web Speech Synthesis with dedicated female voice selection and pitch tuning
+
+let currentAudio: HTMLAudioElement | null = null;
+let currentUtterance: SpeechSynthesisUtterance | null = null;
+let activeSpeechId = 0;
+const clientAudioCache = new Map<string, string>(); // text -> ObjectURL
+
+// Clean text for speech synthesis (strip emojis and decorative characters)
+function sanitizeText(text: string): string {
+  return text
+    .replace(/[\u{1F300}-\u{1F9FF}\u{2600}-\u{26FF}\u{2700}-\u{27BF}]/gu, '')
+    .replace(/[«»""'']/g, '"')
+    .replace(/\s+/g, ' ')
+    .trim();
+}
+
+function fallbackWebSpeech(text: string, onEnd?: () => void) {
+  if (typeof window === 'undefined' || !('speechSynthesis' in window)) {
     if (onEnd) onEnd();
     return;
   }
@@ -151,29 +168,126 @@ export function speakText(text: string, onEnd?: () => void) {
 
   const utterance = new SpeechSynthesisUtterance(text);
   utterance.lang = 'ro-RO';
-  utterance.rate = 0.95; // Slightly slower for children
-  utterance.pitch = 1.15; // Friendly and cheerful
+  utterance.rate = 0.92; // Warm, steady storytelling pace for children
+  utterance.pitch = 1.25; // Gentle, cheerful, maternal tone
 
-  // Find Romanian voice if available
+  // Select Romanian female voice if available
   const voices = window.speechSynthesis.getVoices();
-  const roVoice = voices.find(v => v.lang.startsWith('ro'));
+  const roFemaleVoice = voices.find(
+    (v) =>
+      v.lang.toLowerCase().startsWith('ro') &&
+      (v.name.toLowerCase().includes('ioana') ||
+        v.name.toLowerCase().includes('carmen') ||
+        v.name.toLowerCase().includes('female') ||
+        v.name.toLowerCase().includes('alina') ||
+        v.name.toLowerCase().includes('google română') ||
+        v.name.toLowerCase().includes('natural'))
+  );
+
+  const roVoice = roFemaleVoice || voices.find((v) => v.lang.toLowerCase().startsWith('ro'));
   if (roVoice) {
     utterance.voice = roVoice;
   }
 
   utterance.onend = () => {
+    currentUtterance = null;
     if (onEnd) onEnd();
   };
 
   utterance.onerror = () => {
+    currentUtterance = null;
     if (onEnd) onEnd();
   };
 
+  currentUtterance = utterance;
   window.speechSynthesis.speak(utterance);
 }
 
+export async function speakText(text: string, onEnd?: () => void) {
+  stopSpeaking();
+  const speechId = ++activeSpeechId;
+
+  const cleaned = sanitizeText(text);
+  if (!cleaned) {
+    if (onEnd) onEnd();
+    return;
+  }
+
+  // Try Server-Side Gemini TTS for genuine, warm female Romanian voice across all devices & browsers
+  try {
+    let audioUrl = clientAudioCache.get(cleaned);
+
+    if (!audioUrl) {
+      const response = await fetch('/api/tts', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ text: cleaned, voice: 'Kore' }),
+      });
+
+      if (response.ok) {
+        const blob = await response.blob();
+        audioUrl = URL.createObjectURL(blob);
+        clientAudioCache.set(cleaned, audioUrl);
+      }
+    }
+
+    // Check if another speech request was triggered while fetching
+    if (speechId !== activeSpeechId) {
+      return;
+    }
+
+    if (audioUrl) {
+      const audio = new Audio(audioUrl);
+      currentAudio = audio;
+
+      audio.onended = () => {
+        if (currentAudio === audio) {
+          currentAudio = null;
+        }
+        if (onEnd && speechId === activeSpeechId) {
+          onEnd();
+        }
+      };
+
+      audio.onerror = () => {
+        if (currentAudio === audio) {
+          currentAudio = null;
+        }
+        if (speechId === activeSpeechId) {
+          fallbackWebSpeech(cleaned, onEnd);
+        }
+      };
+
+      await audio.play();
+      return;
+    }
+  } catch (err) {
+    console.warn('Gemini TTS endpoint not reachable, falling back to Web Speech:', err);
+  }
+
+  // Fallback to local synthesizer if offline or server is starting up
+  if (speechId === activeSpeechId) {
+    fallbackWebSpeech(cleaned, onEnd);
+  }
+}
+
 export function stopSpeaking() {
-  if ('speechSynthesis' in window) {
-    window.speechSynthesis.cancel();
+  activeSpeechId++;
+  if (currentAudio) {
+    try {
+      currentAudio.pause();
+      currentAudio.currentTime = 0;
+    } catch {
+      // ignore
+    }
+    currentAudio = null;
+  }
+  if (typeof window !== 'undefined' && 'speechSynthesis' in window) {
+    try {
+      window.speechSynthesis.cancel();
+    } catch {
+      // ignore
+    }
+    currentUtterance = null;
   }
 }
