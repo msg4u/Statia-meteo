@@ -91,7 +91,7 @@ export default function App() {
             <span className="text-2xl">👧</span>
             <div>
               <p className="text-sm font-bold text-slate-800 font-fun">
-                Stația Meteo a Sofiei • Educație prin Curiozitate & Joacă
+                Stația Meteo • Educație prin Curiozitate & Joacă
               </p>
               <p className="text-xs text-slate-700">
                 Inspirat de povestea Sofiei și cei 3 prieteni de nădejde: Morișca, Picurel și Termi.
