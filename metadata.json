@@ -1,0 +1,6 @@
+{
+  "name": "Stația Meteo a Sofiei",
+  "description": "Aplicație educativă pentru copii (4-7 ani): povestea Sofiei, cei trei prieteni meteo (Termi, Morișca, Picurel), ghid de meșterit pas-cu-pas, calendar meteo interactiv și joc de îmbrăcat!",
+  "requestFramePermissions": [],
+  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
+}

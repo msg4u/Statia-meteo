@@ -1,0 +1,40 @@
+@import "tailwindcss";
+
+@theme {
+  --font-sans: "Nunito", system-ui, -apple-system, sans-serif;
+  --font-display: "Fredoka", cursive, sans-serif;
+}
+
+body {
+  font-family: var(--font-sans);
+  background-color: #f0f9ff;
+  color: #1e293b;
+  overflow-x: hidden;
+}
+
+h1, h2, h3, h4, .font-fun {
+  font-family: var(--font-display);
+}
+
+@keyframes float-gentle {
+  0%, 100% { transform: translateY(0px); }
+  50% { transform: translateY(-8px); }
+}
+
+@keyframes pulse-gentle {
+  0%, 100% { transform: scale(1); }
+  50% { transform: scale(1.04); }
+}
+
+@keyframes spin-pinwheel {
+  from { transform: rotate(0deg); }
+  to { transform: rotate(360deg); }
+}
+
+.animate-float {
+  animation: float-gentle 4s ease-in-out infinite;
+}
+
+.animate-pulse-slow {
+  animation: pulse-gentle 3s ease-in-out infinite;
+}
