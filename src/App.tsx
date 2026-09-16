@@ -13,7 +13,7 @@ import { EducatorGuide } from './components/EducatorGuide';
 import { INITIAL_CALENDAR_LOGS } from './data/weatherData';
 import { WeatherLog } from './types';
 import { Heart, Sparkles, BookOpen, Scissors, CloudSun, Calendar } from 'lucide-react';
-import { playPopSound } from './utils/audio';
+import { playPopSound, preloadCoreAudios } from './utils/audio';
 
 const STORAGE_KEY = 'sofia_weather_station_logs_v1';
 
@@ -30,6 +30,11 @@ export default function App() {
     }
     return INITIAL_CALENDAR_LOGS;
   });
+
+  // Preload priority narration audios on startup so all voice buttons react instantly
+  useEffect(() => {
+    preloadCoreAudios();
+  }, []);
 
   useEffect(() => {
     try {

@@ -1,9 +1,10 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { WeatherLog, WeatherType } from '../types';
 import { WEATHER_BADGES } from '../data/weatherData';
-import { Volume2, Calendar as CalendarIcon, BarChart3, Plus, Sparkles, Check } from 'lucide-react';
-import { playPopSound, playSuccessFanfare, speakText } from '../utils/audio';
+import { Calendar as CalendarIcon, BarChart3, Plus, Sparkles, Check } from 'lucide-react';
+import { playPopSound, playSuccessFanfare, preloadSpeech } from '../utils/audio';
 import confetti from 'canvas-confetti';
+import { SpeakButton } from './SpeakButton';
 
 interface CalendarViewProps {
   logs: WeatherLog[];
@@ -36,6 +37,11 @@ export const CalendarView: React.FC<CalendarViewProps> = ({
   });
 
   const totalDays = logs.length;
+  const reportText = `Raportul Sofiei: În cele ${totalDays} zile observate, am avut ${counts.sunny + counts.partly_cloudy} zile cu soare, ${counts.cloudy} zile înnorate, ${counts.rainy} zile cu ploaie și ${counts.windy} zile cu vânt puternic! Sofia a analizat datele exact ca un om de știință!`;
+
+  useEffect(() => {
+    preloadSpeech(reportText);
+  }, [reportText]);
 
   const handleDayClick = (log: WeatherLog) => {
     playPopSound();
@@ -47,11 +53,6 @@ export const CalendarView: React.FC<CalendarViewProps> = ({
     const updated = { ...log, weatherType: newWeather };
     onAddOrUpdateLog(updated);
     setSelectedDayLog(updated);
-  };
-
-  const handleReadReport = () => {
-    const reportText = `Raportul Sofiei: În cele ${totalDays} zile observate, am avut ${counts.sunny + counts.partly_cloudy} zile cu soare, ${counts.cloudy} zile înnorate, ${counts.rainy} zile cu ploaie și ${counts.windy} zile cu vânt puternic! Sofia a analizat datele exact ca un om de știință!`;
-    speakText(reportText);
   };
 
   return (
@@ -156,13 +157,23 @@ export const CalendarView: React.FC<CalendarViewProps> = ({
       {selectedDayLog && (
         <div className="bg-purple-50 border-2 border-purple-300 rounded-3xl p-5 shadow-sm animate-fade-in flex flex-col md:flex-row gap-6 items-start justify-between">
           <div className="flex-1">
-            <div className="flex items-center gap-2 mb-2">
-              <span className="text-xs font-black uppercase text-purple-700 bg-white px-2.5 py-0.5 rounded-full border border-purple-200">
-                {selectedDayLog.dayName}
-              </span>
-              <h4 className="font-fun text-lg font-black text-purple-950">
-                Jurnalul Sofiei pentru această zi
-              </h4>
+            <div className="flex items-center justify-between mb-2">
+              <div className="flex items-center gap-2">
+                <span className="text-xs font-black uppercase text-purple-700 bg-white px-2.5 py-0.5 rounded-full border border-purple-200">
+                  {selectedDayLog.dayName}
+                </span>
+                <h4 className="font-fun text-lg font-black text-purple-950">
+                  Jurnalul Sofiei pentru această zi
+                </h4>
+              </div>
+              <SpeakButton
+                id={`speak-day-${selectedDayLog.id}`}
+                text={`${selectedDayLog.dayName}: Vreme ${WEATHER_BADGES[selectedDayLog.weatherType].label}, ${selectedDayLog.tempDegrees} grade Celsius. ${selectedDayLog.notes}`}
+                label="Ascultă ziua"
+                variant="pill"
+                size="sm"
+                color="purple"
+              />
             </div>
 
             <p className="text-sm font-semibold text-slate-700 mt-1 mb-3">
@@ -228,14 +239,14 @@ export const CalendarView: React.FC<CalendarViewProps> = ({
               </p>
             </div>
 
-            <button
+            <SpeakButton
               id="speak-report-btn"
-              onClick={handleReadReport}
-              className="py-2.5 px-4 bg-amber-400 hover:bg-amber-500 text-amber-950 font-extrabold text-xs sm:text-sm rounded-2xl flex items-center gap-2 shadow-xs transition-transform active:scale-95 cursor-pointer self-start sm:self-center"
-            >
-              <Volume2 className="w-4 h-4" />
-              <span>Ascultă Raportul</span>
-            </button>
+              text={reportText}
+              label="Ascultă Raportul"
+              variant="pill"
+              color="amber"
+              size="md"
+            />
           </div>
 
           {/* Dots Visualization Rows */}

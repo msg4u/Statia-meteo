@@ -1,6 +1,7 @@
-import React from 'react';
-import { HelpCircle, Heart, Lightbulb, Compass, BookOpen, Volume2, CheckCircle2 } from 'lucide-react';
-import { speakText } from '../utils/audio';
+import React, { useEffect } from 'react';
+import { HelpCircle, Heart, Lightbulb, Compass, BookOpen, CheckCircle2 } from 'lucide-react';
+import { preloadSpeech } from '../utils/audio';
+import { SpeakButton } from './SpeakButton';
 
 export const EducatorGuide: React.FC = () => {
   const questions = [
@@ -25,6 +26,12 @@ export const EducatorGuide: React.FC = () => {
       icon: '❤️'
     }
   ];
+
+  useEffect(() => {
+    questions.forEach((item) => {
+      preloadSpeech(item.q);
+    });
+  }, []);
 
   return (
     <div id="educator-guide-container" className="max-w-5xl mx-auto flex flex-col gap-6">
@@ -113,13 +120,14 @@ export const EducatorGuide: React.FC = () => {
               <div>
                 <div className="flex items-center justify-between gap-2 mb-2">
                   <span className="text-2xl">{item.icon}</span>
-                  <button
-                    onClick={() => speakText(item.q)}
-                    title="Ascultă întrebarea"
-                    className="p-1.5 bg-orange-200 hover:bg-orange-300 rounded-full text-orange-800 transition-colors cursor-pointer"
-                  >
-                    <Volume2 className="w-4 h-4" />
-                  </button>
+                  <SpeakButton
+                    id={`speak-guide-q-${idx}`}
+                    text={item.q}
+                    variant="icon"
+                    size="sm"
+                    color="amber"
+                    label="Ascultă întrebarea"
+                  />
                 </div>
                 <h4 className="font-fun font-bold text-slate-900 text-sm sm:text-base leading-snug">
                   "{item.q}"

@@ -1,6 +1,7 @@
 import React from 'react';
-import { Volume2, Droplets, Plus, Minus } from 'lucide-react';
-import { playWaterDropSound, speakText } from '../utils/audio';
+import { Droplets, Plus, Minus } from 'lucide-react';
+import { playWaterDropSound } from '../utils/audio';
+import { SpeakButton } from './SpeakButton';
 
 interface PicurelFriendProps {
   rainCm: number;
@@ -27,10 +28,6 @@ export const PicurelFriend: React.FC<PicurelFriendProps> = ({
     }
   };
 
-  const handleSpeak = () => {
-    speakText(`Picurel spune: ${getSpeechText()}`);
-  };
-
   const handleAddRain = (amount: number) => {
     playWaterDropSound();
     const newRain = Math.max(0, Math.min(maxCm, rainCm + amount));
@@ -39,6 +36,7 @@ export const PicurelFriend: React.FC<PicurelFriendProps> = ({
 
   // Water height percentage
   const waterPercentage = Math.min(100, Math.max(8, (rainCm / maxCm) * 100));
+  const speechContent = `Picurel spune: ${getSpeechText()}`;
 
   return (
     <div
@@ -51,14 +49,14 @@ export const PicurelFriend: React.FC<PicurelFriendProps> = ({
           <span className="text-2xl">💧</span>
           <span className="font-fun text-xl font-bold text-blue-900">Picurel</span>
         </div>
-        <button
+        <SpeakButton
           id="picurel-audio-btn"
-          onClick={handleSpeak}
-          title="Ascultă ce spune Picurel"
-          className="p-2 bg-blue-200 hover:bg-blue-300 rounded-full text-blue-800 transition-colors shadow-xs"
-        >
-          <Volume2 className="w-5 h-5" />
-        </button>
+          text={speechContent}
+          variant="icon"
+          size="sm"
+          color="sky"
+          label="Ascultă Picurel"
+        />
       </div>
 
       {/* Speech bubble */}

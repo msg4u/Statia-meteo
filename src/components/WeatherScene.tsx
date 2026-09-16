@@ -1,8 +1,9 @@
 import React from 'react';
 import { WeatherType } from '../types';
 import { WEATHER_BADGES } from '../data/weatherData';
-import { Volume2, Sparkles } from 'lucide-react';
-import { speakText, playPopSound } from '../utils/audio';
+import { Sparkles } from 'lucide-react';
+import { playPopSound } from '../utils/audio';
+import { SpeakButton } from './SpeakButton';
 
 interface WeatherSceneProps {
   weatherType: WeatherType;
@@ -15,10 +16,6 @@ export const WeatherScene: React.FC<WeatherSceneProps> = ({
 }) => {
   const currentBadge = WEATHER_BADGES[weatherType];
 
-  const handleSpeak = () => {
-    speakText(`Privim pe geam: ${currentBadge.description}`);
-  };
-
   return (
     <div id="weather-sky-window" className="bg-white rounded-3xl p-5 border-3 border-sky-300 shadow-sm relative overflow-hidden">
       <div className="flex items-center justify-between mb-3">
@@ -29,14 +26,14 @@ export const WeatherScene: React.FC<WeatherSceneProps> = ({
           </h2>
         </div>
 
-        <button
+        <SpeakButton
           id="window-audio-btn"
-          onClick={handleSpeak}
-          title="Ascultă descrierea vremii de la geam"
-          className="p-2 bg-sky-100 hover:bg-sky-200 rounded-full text-sky-800 transition-colors shadow-xs"
-        >
-          <Volume2 className="w-5 h-5" />
-        </button>
+          text={`Privim pe geam: ${currentBadge.description}`}
+          label="Ascultă cerul"
+          variant="pill"
+          size="sm"
+          color="sky"
+        />
       </div>
 
       {/* The Animated Window View */}

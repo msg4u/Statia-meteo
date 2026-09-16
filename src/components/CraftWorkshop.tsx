@@ -1,9 +1,10 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { CRAFT_PROJECTS } from '../data/craftData';
 import { CraftProject } from '../types';
-import { Check, CheckCircle2, Sparkles, Volume2, ShieldAlert, Heart, Trophy } from 'lucide-react';
-import { playPopSound, playSuccessFanfare, speakText } from '../utils/audio';
+import { Check, CheckCircle2, Sparkles, ShieldAlert, Heart, Trophy } from 'lucide-react';
+import { playPopSound, playSuccessFanfare, speakText, preloadSpeech } from '../utils/audio';
 import confetti from 'canvas-confetti';
+import { SpeakButton } from './SpeakButton';
 
 export const CraftWorkshop: React.FC = () => {
   const [selectedProjectId, setSelectedProjectId] = useState<string>('termi');
@@ -11,6 +12,15 @@ export const CraftWorkshop: React.FC = () => {
   const [completedSteps, setCompletedSteps] = useState<Record<string, boolean>>({});
 
   const project: CraftProject = CRAFT_PROJECTS.find((p) => p.id === selectedProjectId) || CRAFT_PROJECTS[0];
+
+  useEffect(() => {
+    // Preload project presentation and steps for instantaneous audio
+    preloadSpeech(`${project.name}. ${project.tagline}`);
+    preloadSpeech(`Secretul Bunicii: ${project.secretTip}`);
+    project.steps.forEach((s) => {
+      preloadSpeech(`Pasul ${s.stepNumber}: ${s.title}. ${s.instruction}`);
+    });
+  }, [project]);
 
   const handleToggleMaterial = (matName: string) => {
     playPopSound();
@@ -36,10 +46,6 @@ export const CraftWorkshop: React.FC = () => {
       origin: { y: 0.6 },
     });
     speakText(`Bravo, micule meteorolog! L-ai construit cu succes pe ${project.characterName}! Acum e gata să te ajute să citești cerul!`);
-  };
-
-  const handleSpeakStep = (stepNumber: number, title: string, instruction: string) => {
-    speakText(`Pasul ${stepNumber}: ${title}. ${instruction}`);
   };
 
   return (
@@ -104,9 +110,18 @@ export const CraftWorkshop: React.FC = () => {
         {/* Project Title & Tagline */}
         <div className="border-b-2 border-teal-100 pb-5 mb-6 flex flex-col sm:flex-row sm:items-center justify-between gap-3">
           <div>
-            <span className="text-xs font-black uppercase tracking-wider text-teal-700 bg-teal-50 px-3 py-1 rounded-full border border-teal-200">
-              Proiectul #{CRAFT_PROJECTS.findIndex((p) => p.id === selectedProjectId) + 1}
-            </span>
+            <div className="flex items-center gap-2">
+              <span className="text-xs font-black uppercase tracking-wider text-teal-700 bg-teal-50 px-3 py-1 rounded-full border border-teal-200">
+                Proiectul #{CRAFT_PROJECTS.findIndex((p) => p.id === selectedProjectId) + 1}
+              </span>
+              <SpeakButton
+                id={`speak-proj-${project.id}`}
+                text={`${project.name}. ${project.tagline}`}
+                label="Ascultă descrierea"
+                variant="badge"
+                color="teal"
+              />
+            </div>
             <h3 className="font-fun text-2xl sm:text-3xl font-black text-slate-900 mt-2">
               {project.name}
             </h3>
@@ -182,9 +197,19 @@ export const CraftWorkshop: React.FC = () => {
 
             {/* Secret Tip Box */}
             <div className="mt-6 p-4 bg-amber-100/90 border border-amber-300 rounded-2xl text-amber-950">
-              <div className="flex items-center gap-1.5 font-bold text-xs text-amber-900 mb-1">
-                <Heart className="w-4 h-4 text-rose-500 fill-rose-500" />
-                <span>Secretul Bunicii:</span>
+              <div className="flex items-center justify-between mb-1">
+                <div className="flex items-center gap-1.5 font-bold text-xs text-amber-900">
+                  <Heart className="w-4 h-4 text-rose-500 fill-rose-500" />
+                  <span>Secretul Bunicii:</span>
+                </div>
+                <SpeakButton
+                  id={`speak-secret-${project.id}`}
+                  text={`Secretul Bunicii: ${project.secretTip}`}
+                  variant="icon"
+                  size="sm"
+                  color="amber"
+                  label="Ascultă secretul bunicii"
+                />
               </div>
               <p className="text-xs font-semibold leading-relaxed">
                 {project.secretTip}
@@ -208,6 +233,7 @@ export const CraftWorkshop: React.FC = () => {
               {project.steps.map((step) => {
                 const stepKey = `${project.id}-${step.stepNumber}`;
                 const isDone = completedSteps[stepKey] || false;
+                const stepSpeech = `Pasul ${step.stepNumber}: ${step.title}. ${step.instruction}`;
 
                 return (
                   <div
@@ -246,14 +272,14 @@ export const CraftWorkshop: React.FC = () => {
                         </div>
                       </div>
 
-                      <button
+                      <SpeakButton
                         id={`speak-step-${step.stepNumber}`}
-                        onClick={() => handleSpeakStep(step.stepNumber, step.title, step.instruction)}
-                        title="Ascultă instrucțiunea"
-                        className="p-2 bg-slate-100 hover:bg-teal-100 rounded-full text-slate-700 hover:text-teal-900 transition-colors shadow-2xs"
-                      >
-                        <Volume2 className="w-4 h-4" />
-                      </button>
+                        text={stepSpeech}
+                        variant="icon"
+                        size="sm"
+                        color="teal"
+                        label={`Ascultă pasul ${step.stepNumber}`}
+                      />
                     </div>
 
                     <p className="mt-3 text-sm text-slate-700 font-medium leading-relaxed">

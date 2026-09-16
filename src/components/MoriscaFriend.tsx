@@ -1,7 +1,8 @@
 import React from 'react';
 import { WindSpeed } from '../types';
-import { Volume2, Wind } from 'lucide-react';
-import { playWindSound, speakText } from '../utils/audio';
+import { Wind } from 'lucide-react';
+import { playWindSound } from '../utils/audio';
+import { SpeakButton } from './SpeakButton';
 
 interface MoriscaFriendProps {
   windSpeed: WindSpeed;
@@ -48,9 +49,7 @@ export const MoriscaFriend: React.FC<MoriscaFriendProps> = ({
     onChangeSpeed(speeds[nextIdx]);
   };
 
-  const handleSpeak = () => {
-    speakText(`Morișca spune: ${getSpeechText()}`);
-  };
+  const speechContent = `Morișca spune: ${getSpeechText()}`;
 
   return (
     <div
@@ -63,14 +62,14 @@ export const MoriscaFriend: React.FC<MoriscaFriendProps> = ({
           <span className="text-2xl">🌀</span>
           <span className="font-fun text-xl font-bold text-amber-900">Morișca</span>
         </div>
-        <button
+        <SpeakButton
           id="morisca-audio-btn"
-          onClick={handleSpeak}
-          title="Ascultă ce spune Morișca"
-          className="p-2 bg-amber-200 hover:bg-amber-300 rounded-full text-amber-800 transition-colors shadow-xs"
-        >
-          <Volume2 className="w-5 h-5" />
-        </button>
+          text={speechContent}
+          variant="icon"
+          size="sm"
+          color="amber"
+          label="Ascultă Morișca"
+        />
       </div>
 
       {/* Speech bubble */}

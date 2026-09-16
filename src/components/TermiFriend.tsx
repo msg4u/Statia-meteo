@@ -1,7 +1,8 @@
 import React from 'react';
 import { TempLevel } from '../types';
-import { Volume2, ThermometerSnowflake, Sun, Sparkles } from 'lucide-react';
-import { playChimeSound, speakText } from '../utils/audio';
+import { ThermometerSnowflake, Sun, Sparkles } from 'lucide-react';
+import { playChimeSound } from '../utils/audio';
+import { SpeakButton } from './SpeakButton';
 
 interface TermiFriendProps {
   temperature: number; // in degrees Celsius (-5 to 35)
@@ -39,10 +40,6 @@ export const TermiFriend: React.FC<TermiFriendProps> = ({
     }
   };
 
-  const handleSpeak = () => {
-    speakText(`Termi spune: ${getSpeechText()}`);
-  };
-
   const handleSlide = (newTemp: number) => {
     playChimeSound();
     onChangeTemp(newTemp);
@@ -64,14 +61,14 @@ export const TermiFriend: React.FC<TermiFriendProps> = ({
           <span className="text-2xl">🌡️</span>
           <span className="font-fun text-xl font-bold text-rose-900">Termi</span>
         </div>
-        <button
+        <SpeakButton
           id="termi-audio-btn"
-          onClick={handleSpeak}
-          title="Ascultă ce spune Termi"
-          className="p-2 bg-rose-200 hover:bg-rose-300 rounded-full text-rose-800 transition-colors shadow-xs"
-        >
-          <Volume2 className="w-5 h-5" />
-        </button>
+          text={`Termi spune: ${getSpeechText()}`}
+          variant="icon"
+          size="sm"
+          color="rose"
+          label="Ascultă Termi"
+        />
       </div>
 
       {/* Speech bubble */}

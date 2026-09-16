@@ -1,6 +1,6 @@
 import React from 'react';
-import { Volume2, Sparkles, AlertCircle, CheckCircle2 } from 'lucide-react';
-import { speakText } from '../utils/audio';
+import { Sparkles, AlertCircle, CheckCircle2 } from 'lucide-react';
+import { SpeakButton } from './SpeakButton';
 
 export interface OutfitState {
   hat?: string;
@@ -52,10 +52,6 @@ export const SofiaCharacter: React.FC<SofiaCharacterProps> = ({
     statusType = 'success';
   }
 
-  const handleSpeak = () => {
-    speakText(feedback);
-  };
-
   return (
     <div
       id="sofia-character-box"
@@ -67,14 +63,14 @@ export const SofiaCharacter: React.FC<SofiaCharacterProps> = ({
           <span className="text-2xl">👧</span>
           <span className="font-fun text-xl font-bold text-purple-900">Sofia</span>
         </div>
-        <button
+        <SpeakButton
           id="sofia-audio-btn"
-          onClick={handleSpeak}
-          title="Ascultă ce spune Sofia"
-          className="p-2 bg-purple-200 hover:bg-purple-300 rounded-full text-purple-800 transition-colors shadow-xs"
-        >
-          <Volume2 className="w-5 h-5" />
-        </button>
+          text={feedback}
+          variant="pill"
+          size="sm"
+          color="purple"
+          label="Ce zice Sofia?"
+        />
       </div>
 
       {/* Feedback banner */}

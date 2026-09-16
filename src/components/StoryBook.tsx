@@ -1,31 +1,26 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { STORY_PAGES } from '../data/storyData';
-import { Volume2, VolumeX, ArrowLeft, ArrowRight, Sparkles, BookOpen } from 'lucide-react';
-import { speakText, stopSpeaking, playChimeSound, playPopSound } from '../utils/audio';
+import { ArrowLeft, ArrowRight, Sparkles, BookOpen } from 'lucide-react';
+import { stopSpeaking, playPopSound, preloadSpeech } from '../utils/audio';
+import { SpeakButton } from './SpeakButton';
 
 export const StoryBook: React.FC = () => {
   const [currentPageIndex, setCurrentPageIndex] = useState(0);
-  const [isSpeaking, setIsSpeaking] = useState(false);
 
   const page = STORY_PAGES[currentPageIndex];
+  const fullPageText = `${page.title}. ${page.text} ${page.dialogue || ''}`;
 
-  const handleReadAloud = () => {
-    if (isSpeaking) {
-      stopSpeaking();
-      setIsSpeaking(false);
-      return;
+  // Automatically preload current page and adjacent pages for 0ms audio start
+  useEffect(() => {
+    preloadSpeech(fullPageText);
+    if (currentPageIndex + 1 < STORY_PAGES.length) {
+      const nextP = STORY_PAGES[currentPageIndex + 1];
+      preloadSpeech(`${nextP.title}. ${nextP.text} ${nextP.dialogue || ''}`);
     }
-
-    setIsSpeaking(true);
-    const fullText = `${page.title}. ${page.text} ${page.dialogue || ''}`;
-    speakText(fullText, () => {
-      setIsSpeaking(false);
-    });
-  };
+  }, [currentPageIndex, fullPageText]);
 
   const handleNextPage = () => {
     stopSpeaking();
-    setIsSpeaking(false);
     playPopSound();
     if (currentPageIndex < STORY_PAGES.length - 1) {
       setCurrentPageIndex(currentPageIndex + 1);
@@ -34,7 +29,6 @@ export const StoryBook: React.FC = () => {
 
   const handlePrevPage = () => {
     stopSpeaking();
-    setIsSpeaking(false);
     playPopSound();
     if (currentPageIndex > 0) {
       setCurrentPageIndex(currentPageIndex - 1);
@@ -46,7 +40,7 @@ export const StoryBook: React.FC = () => {
       {/* Book cover or page container */}
       <div className="w-full bg-white border-4 border-amber-300 rounded-3xl shadow-xl overflow-hidden relative">
         {/* Book Header ribbon */}
-        <div className="bg-gradient-to-r from-amber-400 via-yellow-400 to-amber-300 px-6 py-4 flex items-center justify-between border-b-2 border-amber-500">
+        <div className="bg-gradient-to-r from-amber-400 via-yellow-400 to-amber-300 px-6 py-4 flex flex-wrap items-center justify-between gap-3 border-b-2 border-amber-500">
           <div className="flex items-center gap-2">
             <BookOpen className="w-6 h-6 text-amber-950" />
             <h2 className="font-fun text-xl sm:text-2xl font-black text-amber-950">
@@ -55,18 +49,15 @@ export const StoryBook: React.FC = () => {
           </div>
 
           <div className="flex items-center gap-3">
-            <button
+            <SpeakButton
               id="story-read-aloud-btn"
-              onClick={handleReadAloud}
-              className={`py-2 px-4 rounded-full font-bold text-xs sm:text-sm flex items-center gap-2 shadow-xs transition-transform active:scale-95 cursor-pointer ${
-                isSpeaking
-                  ? 'bg-rose-500 text-white animate-pulse'
-                  : 'bg-white text-amber-900 hover:bg-amber-50'
-              }`}
-            >
-              {isSpeaking ? <VolumeX className="w-4 h-4" /> : <Volume2 className="w-4 h-4" />}
-              <span>{isSpeaking ? 'Oprește lectura' : 'Citește-mi povestea'}</span>
-            </button>
+              text={fullPageText}
+              label="Citește-mi povestea"
+              playingLabel="Oprește lectura"
+              variant="pill"
+              color="white"
+              size="md"
+            />
             <span className="bg-amber-950/10 font-black text-amber-950 px-3 py-1 rounded-full text-xs">
               {currentPageIndex + 1} / {STORY_PAGES.length}
             </span>
@@ -171,9 +162,18 @@ export const StoryBook: React.FC = () => {
           {/* Story Text */}
           <div className="flex flex-col justify-between h-full">
             <div>
-              <span className="text-xs font-extrabold uppercase tracking-widest text-amber-600">
-                Pagina {page.id}
-              </span>
+              <div className="flex items-center justify-between">
+                <span className="text-xs font-extrabold uppercase tracking-widest text-amber-600">
+                  Pagina {page.id}
+                </span>
+                <SpeakButton
+                  text={`${page.title}. ${page.text}`}
+                  label="Ascultă textul"
+                  variant="badge"
+                  color="amber"
+                />
+              </div>
+
               <h3 className="font-fun text-2xl font-black text-slate-900 mt-1 mb-4">
                 {page.title}
               </h3>
@@ -182,16 +182,32 @@ export const StoryBook: React.FC = () => {
               </p>
 
               {page.dialogue && (
-                <div className="mt-4 p-3.5 bg-amber-100/70 border-l-4 border-amber-500 rounded-r-2xl text-slate-900 font-bold italic text-sm sm:text-base">
-                  {page.dialogue}
+                <div className="mt-4 p-3.5 bg-amber-100/70 border-l-4 border-amber-500 rounded-r-2xl text-slate-900 font-bold italic text-sm sm:text-base flex items-start justify-between gap-2">
+                  <span>{page.dialogue}</span>
+                  <SpeakButton
+                    text={page.dialogue}
+                    label="Dialog"
+                    variant="icon"
+                    size="sm"
+                    color="amber"
+                  />
                 </div>
               )}
             </div>
 
             {/* Educational insight box */}
-            <div className="mt-6 p-3 bg-sky-50 border border-sky-200 rounded-2xl text-xs text-sky-900 font-bold flex items-center gap-2">
-              <span className="text-base">💡</span>
-              <span>{page.learningTip}</span>
+            <div className="mt-6 p-3 bg-sky-50 border border-sky-200 rounded-2xl text-xs text-sky-900 font-bold flex items-center justify-between gap-2">
+              <div className="flex items-center gap-2">
+                <span className="text-base">💡</span>
+                <span>{page.learningTip}</span>
+              </div>
+              <SpeakButton
+                text={`Sfatul Sofiei: ${page.learningTip}`}
+                label="Sfat"
+                variant="icon"
+                size="sm"
+                color="sky"
+              />
             </div>
           </div>
         </div>
@@ -215,7 +231,6 @@ export const StoryBook: React.FC = () => {
                 key={idx}
                 onClick={() => {
                   stopSpeaking();
-                  setIsSpeaking(false);
                   playPopSound();
                   setCurrentPageIndex(idx);
                 }}

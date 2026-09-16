@@ -1,6 +1,7 @@
 import React from 'react';
-import { CloudSun, BookOpen, Scissors, Calendar, Compass, Volume2 } from 'lucide-react';
-import { playPopSound, speakText } from '../utils/audio';
+import { CloudSun, BookOpen, Scissors, Calendar, Compass } from 'lucide-react';
+import { playPopSound } from '../utils/audio';
+import { SpeakButton } from './SpeakButton';
 
 export type ActiveTab = 'station' | 'story' | 'craft' | 'calendar' | 'guide';
 
@@ -47,35 +48,45 @@ export const Navbar: React.FC<NavbarProps> = ({ activeTab, onSelectTab }) => {
     onSelectTab(tabId);
   };
 
-  const handleWelcomeSpeech = () => {
-    speakText('Bine ai venit la Stația Meteo! Învață să asculți semnele naturii alături de Morișca, Picurel și Termi!');
-  };
+  const welcomeText = 'Bine ai venit la Stația Meteo! Învață să asculți semnele naturii alături de Morișca, Picurel și Termi!';
 
   return (
     <header className="sticky top-0 z-50 bg-white/95 backdrop-blur-md border-b-2 border-amber-200 shadow-xs">
       <div className="max-w-7xl mx-auto px-3 sm:px-4 py-2.5 flex flex-col xl:flex-row items-center justify-between gap-2.5">
         {/* Brand Logo & Title */}
-        <div
-          className="flex items-center gap-2.5 cursor-pointer shrink-0"
-          onClick={handleWelcomeSpeech}
-          title="Apasă pentru a asculta"
-        >
-          <div className="w-10 h-10 sm:w-11 sm:h-11 rounded-2xl bg-gradient-to-tr from-amber-400 to-yellow-300 border-2 border-amber-500 shadow-xs flex items-center justify-center text-xl sm:text-2xl transform hover:rotate-6 transition-transform shrink-0">
-            ⛅
-          </div>
-          <div>
-            <div className="flex items-center gap-1.5">
-              <h1 className="font-fun text-xl sm:text-2xl font-black text-slate-900 tracking-tight leading-none">
-                Stația Meteo
-              </h1>
-              <span className="text-[10px] font-black bg-amber-100 text-amber-900 px-2 py-0.5 rounded-full border border-amber-300 leading-none">
-                4-7 ani
-              </span>
+        <div className="flex items-center gap-3 shrink-0">
+          <div
+            onClick={() => {
+              playPopSound();
+              onSelectTab('station');
+            }}
+            className="flex items-center gap-2.5 cursor-pointer"
+          >
+            <div className="w-10 h-10 sm:w-11 sm:h-11 rounded-2xl bg-gradient-to-tr from-amber-400 to-yellow-300 border-2 border-amber-500 shadow-xs flex items-center justify-center text-xl sm:text-2xl transform hover:rotate-6 transition-transform shrink-0">
+              ⛅
             </div>
-            <p className="text-[11px] font-bold text-slate-600 mt-0.5">
-              Morișca 🌀 • Picurel 💧 • Termi 🌡️
-            </p>
+            <div>
+              <div className="flex items-center gap-1.5">
+                <h1 className="font-fun text-xl sm:text-2xl font-black text-slate-900 tracking-tight leading-none">
+                  Stația Meteo
+                </h1>
+                <span className="text-[10px] font-black bg-amber-100 text-amber-900 px-2 py-0.5 rounded-full border border-amber-300 leading-none">
+                  4-7 ani
+                </span>
+              </div>
+              <p className="text-[11px] font-bold text-slate-600 mt-0.5">
+                Morișca 🌀 • Picurel 💧 • Termi 🌡️
+              </p>
+            </div>
           </div>
+
+          <SpeakButton
+            id="nav-welcome-audio-btn"
+            text={welcomeText}
+            variant="badge"
+            color="amber"
+            label="Bun venit"
+          />
         </div>
 
         {/* Navigation Tabs - fully responsive with wrapping so no tab is cut off */}
